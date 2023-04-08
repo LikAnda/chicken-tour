@@ -1,40 +1,25 @@
+# GOAL: récupérer des œufs en picorant les plantes et les vendres à l'échoppe
+
+# ========[FEATURES]=========
+# - se déplacer dans toutes les directions (+ animation)
+# - les plantes grandissent automatiquement
+# - récupérer des œufs en picorant les plantes (+ animation)
+# - vendre les œufs à un magasin pour obtenir des pièces (valeur d'un œufs aléatoirelent choisie)
+# - tirer un œuf dans les quatres directions (devant, gauche, derrière, droite)
+# - achievements: 10 œuf récupérés / 50 pièces obetnues
+# ========[FEATURES]=========
+
+# ==========[KEYS]===========
+# Z, Q, S, D = Devant, Gauche, Derrière, Droite
+# E = Picorer une plante (poule doit être sur une plante)
+# T = Trade à l'échoppe (poule doit être sur le magasin)
+# F = Tirer un œuf dans la direction où le joueur regarde (œufs nécessaires pour tirer)
+# ==========[KEYS]===========
+
 from tkinter import *
 from PIL import Image
 from random import randint
 from tkinter import messagebox
-
-# enlever touche E (pas trouver avec autre manière)
-"""
-def clearShowKey():
-    global ca, window, keyE
-    global keyECrop1, keyECrop2, keyECrop3, keyECrop4, keyForECrop1
-
-    if keyForECrop1 == None
-    ca.delete(keyECrop1)
-
-def showKey():
-    global ca, window, keyE
-    global player, crop1, crop2, crop3, crop3, market
-    global xCrop1, yCrop1, xCrop2, yCrop2, xCrop3, yCrop3, xCrop4, yCrop4, xMarket, yMarket
-    global keyECrop1, keyECrop2, keyECrop3, keyECrop4, keyForECrop1
-
-    xPlayer, yPlayer = ca.coords(player)
-
-    if (xCrop1-30< xPlayer < xCrop1+30) and (yCrop1-30< yPlayer < yCrop1+30):
-        keyECrop1 = ca.create_image(xCrop1, yCrop1-30, image=keyE)
-        keyForECrop1 = None
-
-    if (xCrop2-30< xPlayer < xCrop2+30) and (yCrop2-30< yPlayer < yCrop2+30):
-        keyECrop2 = ca.create_image(xCrop2, yCrop2-30, image=keyE)
-
-    if (xCrop3-30< xPlayer < xCrop3+30) and (yCrop3-30< yPlayer < yCrop3+30):
-        keyECrop3 = ca.create_image(xCrop3, yCrop3-30, image=keyE)
-
-    if (xCrop4-30< xPlayer < xCrop4+30) and (yCrop4-30< yPlayer < yCrop4+30):
-        keyECrop4 = ca.create_image(xCrop4, yCrop4-30, image=keyE)
-    
-    window.after(5000, clearShowKey)
-"""
 
 # compter le nombre de pièces
 def coinsCount(coinsValue):
@@ -50,6 +35,13 @@ def eggsCount(eggsValue):
     eggNumber = eggNumber + eggsValue
     eggCounterLabel.config(text=f"{eggNumber} œufs")
 
+# shoot = tire un œuf dans la direction où regarde le joueur
+def shoot():
+    print("SHOOT")
+    global ca, window, player, eggNumber
+
+    xPlayer, yPlayer = ca.coords(player)
+
 # trade = échanger des œufs contre des pèces au magasin
 def trade():
     print("TRADE")
@@ -59,18 +51,33 @@ def trade():
     xPlayer, yPlayer = ca.coords(player)
 
     if (xMarket-50< xPlayer < xMarket+50) and (yMarket-50< yPlayer < yMarket+50 and eggNumber > 0):
-        print("Trade Accepted")
         eggsCount(-1)
         coinToEarn = randint(3, 7)
         coinsCount(coinToEarn)
+        print(f"Trade Accepted: coinToEarn = {coinToEarn}")
     else:
         print("Trade Declined")
+    
+    if coinNumber >= 50:
+        messagebox.showerror(title="Succès Déverrouiller", message="Vous avez obetnue plus de 50 pièces !")
 
+# peckAnimation = anime le picorage des plantes
+def peckAnimation():
+    global ca, window, player
+    global rowIndex, compteurSprite, peckSpriteCount
+
+    xPlayer, yPlayer = ca.coords(player)
+
+    peckSpriteCount += 1
+    ca.delete(player)
+    player = ca.create_image(xPlayer, yPlayer, image = principalSpriteList[rowIndex][peckSpriteCount])
+    if peckSpriteCount < 2:
+        window.after(300, peckAnimation)
 
 # peck = picorer les plantes pour obtenir des oeufs
 def peck():
     print("PECK")
-    global ca, window, player
+    global ca, window, player, peckSpriteCount, peckCount
     global crop1, crop2, crop3, crop4, crop1Image, crop2Image, crop3Image, crop4Image
     global xCrop1, yCrop1, xCrop2, yCrop2, xCrop3, yCrop3, xCrop4, yCrop4, crop1State, crop2State, crop3State, crop4State
 
@@ -79,26 +86,41 @@ def peck():
     if (xCrop1-30< xPlayer < xCrop1+30) and (yCrop1-30< yPlayer < yCrop1+30 and crop1State == 4):
         crop1State = 0
         ca.delete(crop1)
+        peckAnimation()
+        peckSpriteCount = 0
         crop1 = ca.create_image(xCrop1, yCrop1, image=principalCropsList[0][crop1State])
         eggsCount(1)
+        peckCount += 1
     
     if (xCrop2-30< xPlayer < xCrop2+30) and (yCrop2-30< yPlayer < yCrop2+30 and crop2State == 4):
         crop2State = 0
         ca.delete(crop2)
+        peckAnimation()
+        peckSpriteCount = 0
         crop2 = ca.create_image(xCrop2, yCrop2, image=principalCropsList[0][crop2State])
         eggsCount(1)
+        peckCount += 1
 
     if (xCrop3-30< xPlayer < xCrop3+30) and (yCrop3-30< yPlayer < yCrop3+30 and crop3State == 4):
         crop3State = 0
         ca.delete(crop3)
+        peckAnimation()
+        peckSpriteCount = 0
         crop3 = ca.create_image(xCrop3, yCrop3, image=principalCropsList[0][crop3State])
         eggsCount(1)
+        peckCount += 1
 
     if (xCrop4-30< xPlayer < xCrop4+30) and (yCrop4-30< yPlayer < yCrop4+30 and crop4State == 4):
         crop4State = 0
         ca.delete(crop4)
+        peckAnimation()
+        peckSpriteCount = 0
         crop4 = ca.create_image(xCrop4, yCrop4, image=principalCropsList[0][crop4State])
         eggsCount(1)
+        peckCount += 1
+
+    if peckCount == 10:
+        messagebox.showinfo(title="Succès Déverrouiller", message="Vous avez picoré des plantes 10 fois !")
 
 # growCrops = fait grandir les plantations
 def growCrops():
@@ -172,20 +194,16 @@ def borderProcess():
 
 # move = déplace le sprite du personnage
 def move(event):
-    global ca, player, principalSpriteList, rightCompteurSprite, compteurSprite, rowIndex, compteurSprite
+    global ca, player, principalSpriteList, compteurSprite, rowIndex
 
     # effectuer d'autres actions en cas de presse de touche autres que z, q, s, d
     if  event.char == 'z' or event.char == 's' or event.char == 'q' or event.char == 'd':
         compteurSprite += 1
-        rightCompteurSprite += 1
 
-        if compteurSprite == 6:
+        if compteurSprite == 7:
             compteurSprite = 2
-
-        if rightCompteurSprite == 6:
-            rightCompteurSprite = 0
-        
         x, y = ca.coords(player)
+
         if event.char == 'z':
             ca.delete(player)
             rowIndex = 3
@@ -201,11 +219,13 @@ def move(event):
         elif event.char == 'd':
             ca.delete(player)
             rowIndex = 0
-            player = ca.create_image(x+10, y, image = principalSpriteList[rowIndex][rightCompteurSprite])
+            player = ca.create_image(x+10, y, image = principalSpriteList[rowIndex][compteurSprite])
         borderProcess()
 
     elif event.char == 'e':
         peck()
+    elif event.char == 'f':
+        shoot()
     elif event.char == 't':
         trade()
     else:
@@ -214,9 +234,10 @@ def move(event):
     "showKey()"
 
 compteurSprite = 2
-rightCompteurSprite = 0
+peckSpriteCount = 0
 eggNumber = 0
 coinNumber = 5
+peckCount = 0
 
 window = Tk()
 window.title("Chicken Tour")
