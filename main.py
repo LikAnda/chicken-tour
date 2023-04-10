@@ -57,7 +57,7 @@ def shoot():
         ca.delete(eggBullet)
         eggBullet = ca.create_image(xEggBullet, yEggBullet, image=eggBulletImg)
 
-    if "xEggBullet" in globals() or "yEggBullet" in globals():
+    if "xEggBullet" in globals() or "yEggBullet" in globals(): # vérifie si la variable existe
         if xEggBullet < 0:
             shootInProgress = False
         if xEggBullet > xWindow:
@@ -99,7 +99,7 @@ def peckAnimation():
     ca.delete(player)
     player = ca.create_image(xPlayer, yPlayer, image = principalSpriteList[rowIndex][peckSpriteCount])
     if peckSpriteCount < 2:
-        window.after(500, peckAnimation)
+        window.after(300, peckAnimation)
 
 # peck = picorer les plantes pour obtenir des oeufs
 def peck():
@@ -259,7 +259,7 @@ def move(event):
     elif event.char == 'f':
         if eggNumber > 0:
             x, y = ca.coords(player)
-            if "eggBullet" in globals():
+            if "eggBullet" in globals(): # vérifie si la vriable existe pour supprimer l'ancien œuf
                 print("eggBullet exist")
                 ca.delete(eggBullet)
             eggBullet = ca.create_image(x, y, image=eggBulletImg)
@@ -275,10 +275,6 @@ def move(event):
             shootInProgress = True
     elif event.char == 't':
         trade()
-    else:
-        pass
-
-    "showKey()"
 
 compteurSprite = 2
 peckSpriteCount = 0
@@ -297,23 +293,23 @@ ca.place(x=0,y=0)
 imageMap = PhotoImage(file="./images/map.png") # map
 map = ca.create_image(500, 338,  image=imageMap)
 
-imagePlayer = PhotoImage(file="./images/first-chicken-sprite.png")
+imagePlayer = PhotoImage(file="./images/first-chicken-sprite.png") # joueur
 player = ca.create_image(275, 380, image=imagePlayer)
 
 eggCounterImage = PhotoImage(file="./images/egg-counter.png")
 eggCounter =  ca.create_image(40, 40, image=eggCounterImage)
 eggCounterLabel = Label(window, text=f"{eggNumber} œufs", font=("Arial", 15), background="#20A80A")
-eggCounterLabel.place(x=70, y=28)
+eggCounterLabel.place(x=70, y=28) # compteur d'œuf
 
 coinCounterImage = PhotoImage(file="./images/coin-counter.png")
 coinCounter =  ca.create_image(190, 42, image=coinCounterImage)
 coinCounterLabel = Label(window, text=f"{coinNumber} pièces", font=("Arial", 15), bg="#DEE50E")
-coinCounterLabel.place(x=220, y=28)
+coinCounterLabel.place(x=220, y=28)# compteur de pièces
 
 window.bind("<Any-KeyPress>", move)
 
 # ===========[sprites]=========== #
-sprite = Image.open("./images/chicken-sprite.png")
+sprite = Image.open("./images/chicken-sprite.png") # sprite du joueur
 principalSpriteList = []
 for i in range(0, 4):
     listTemp = []
@@ -324,7 +320,7 @@ for i in range(0, 4):
         listTemp.append(imgTemp)
     principalSpriteList.append(listTemp)
 
-spriteCrops = Image.open("./images/crops.png")
+spriteCrops = Image.open("./images/crops.png") # sprite des plantes
 principalCropsList = []
 for i in range(0, 1):
     listTempCrops = []
@@ -344,28 +340,22 @@ xCrop4, yCrop4 = 660, 490
 xMarket, yMarket = 460, 185
 
 # ============[props]============ #
-crop1Image = PhotoImage(file="./images/crop1.png")
-crop1 = ca.create_image(xCrop1, yCrop1, image=crop1Image)
+crop1 = ca.create_image(xCrop1, yCrop1, image=principalCropsList[0][0])
 crop1State = 0
 
-crop2Image = PhotoImage(file="./images/crop2.png")
-crop2 = ca.create_image(xCrop2, yCrop2, image=crop2Image)
+crop2 = ca.create_image(xCrop2, yCrop2, image=principalCropsList[0][1])
 crop2State = 1
 
-crop3Image = PhotoImage(file="./images/crop3.png")
-crop3 = ca.create_image(xCrop3, yCrop3, image=crop3Image)
+crop3 = ca.create_image(xCrop3, yCrop3, image=principalCropsList[0][2])
 crop3State = 2
 
-crop4Image = PhotoImage(file="./images/crop5.png")
-crop4 = ca.create_image(xCrop4, yCrop4, image=crop4Image)
+crop4 = ca.create_image(xCrop4, yCrop4, image=principalCropsList[0][4])
 crop4State = 4
 
 marketImage = PhotoImage(file="./images/market.png")
 market = ca.create_image(xMarket, yMarket, image=marketImage)
 
 eggBulletImg = PhotoImage(file="./images/egg-bullet.png")
-
-keyE = PhotoImage(file="./images/e-key.png")
 
 shootInProgress = False
 shoot()
