@@ -37,10 +37,37 @@ def eggsCount(eggsValue):
 
 # shoot = tire un œuf dans la direction où regarde le joueur
 def shoot():
-    print("SHOOT")
-    global ca, window, player, eggNumber
+    global ca, window, player, eggNumber, eggBullet, eggBulletImg, shootInProgress, shootDirection
 
-    xPlayer, yPlayer = ca.coords(player)
+    xWindow = window.winfo_width()
+    yWindow = window.winfo_height()
+
+    if shootInProgress == True:
+        xEggBullet, yEggBullet = ca.coords(eggBullet)
+
+        if shootDirection == 0:
+            xEggBullet += 10
+        elif shootDirection == 1:
+            xEggBullet -= 10
+        elif shootDirection == 2:
+            yEggBullet += 10
+        elif shootDirection == 3:
+            yEggBullet -= 10
+
+        ca.delete(eggBullet)
+        eggBullet = ca.create_image(xEggBullet, yEggBullet, image=eggBulletImg)
+
+    if "xEggBullet" in globals() or "yEggBullet" in globals():
+        if xEggBullet < 0:
+            shootInProgress = False
+        if xEggBullet > xWindow:
+            shootInProgress = False
+        if yEggBullet < 0:
+            shootInProgress = False
+        if yEggBullet > yWindow:
+            shootInProgress = False
+
+    window.after(20, shoot)
 
 # trade = échanger des œufs contre des pèces au magasin
 def trade():
@@ -72,12 +99,12 @@ def peckAnimation():
     ca.delete(player)
     player = ca.create_image(xPlayer, yPlayer, image = principalSpriteList[rowIndex][peckSpriteCount])
     if peckSpriteCount < 2:
-        window.after(300, peckAnimation)
+        window.after(500, peckAnimation)
 
 # peck = picorer les plantes pour obtenir des oeufs
 def peck():
     print("PECK")
-    global ca, window, player, peckSpriteCount, peckCount
+    global ca, window, player, peckSpriteCount, peckCount, peckInProgress
     global crop1, crop2, crop3, crop4, crop1Image, crop2Image, crop3Image, crop4Image
     global xCrop1, yCrop1, xCrop2, yCrop2, xCrop3, yCrop3, xCrop4, yCrop4, crop1State, crop2State, crop3State, crop4State
 
@@ -118,6 +145,8 @@ def peck():
         crop4 = ca.create_image(xCrop4, yCrop4, image=principalCropsList[0][crop4State])
         eggsCount(1)
         peckCount += 1
+    
+    peckInProgress = False
 
     if peckCount == 10:
         messagebox.showinfo(title="Succès Déverrouiller", message="Vous avez picoré des plantes 10 fois !")
@@ -195,37 +224,55 @@ def borderProcess():
 # move = déplace le sprite du personnage
 def move(event):
     global ca, player, principalSpriteList, compteurSprite, rowIndex
+    global shootInProgress, eggBullet, eggBulletImg, shootDirection, eggNumber, peckInProgress
 
     # effectuer d'autres actions en cas de presse de touche autres que z, q, s, d
     if  event.char == 'z' or event.char == 's' or event.char == 'q' or event.char == 'd':
-        compteurSprite += 1
+        if peckInProgress != True:
+            compteurSprite += 1
 
-        if compteurSprite == 7:
-            compteurSprite = 2
-        x, y = ca.coords(player)
+            if compteurSprite == 7:
+                compteurSprite = 2
+            x, y = ca.coords(player)
 
-        if event.char == 'z':
-            ca.delete(player)
-            rowIndex = 3
-            player = ca.create_image(x, y-10, image = principalSpriteList[rowIndex][compteurSprite])
-        elif event.char == 's':
-            ca.delete(player)
-            rowIndex = 2
-            player = ca.create_image(x, y+10, image = principalSpriteList[rowIndex][compteurSprite])
-        elif event.char == 'q':
-            ca.delete(player)
-            rowIndex = 1
-            player = ca.create_image(x-10, y, image = principalSpriteList[rowIndex][compteurSprite])
-        elif event.char == 'd':
-            ca.delete(player)
-            rowIndex = 0
-            player = ca.create_image(x+10, y, image = principalSpriteList[rowIndex][compteurSprite])
-        borderProcess()
+            if event.char == 'z':
+                ca.delete(player)
+                rowIndex = 3
+                player = ca.create_image(x, y-10, image = principalSpriteList[rowIndex][compteurSprite])
+            elif event.char == 's':
+                ca.delete(player)
+                rowIndex = 2
+                player = ca.create_image(x, y+10, image = principalSpriteList[rowIndex][compteurSprite])
+            elif event.char == 'q':
+                ca.delete(player)
+                rowIndex = 1
+                player = ca.create_image(x-10, y, image = principalSpriteList[rowIndex][compteurSprite])
+            elif event.char == 'd':
+                ca.delete(player)
+                rowIndex = 0
+                player = ca.create_image(x+10, y, image = principalSpriteList[rowIndex][compteurSprite])
+            borderProcess()
 
     elif event.char == 'e':
+        peckInProgress = True
         peck()
     elif event.char == 'f':
-        shoot()
+        if eggNumber > 0:
+            x, y = ca.coords(player)
+            if "eggBullet" in globals():
+                print("eggBullet exist")
+                ca.delete(eggBullet)
+            eggBullet = ca.create_image(x, y, image=eggBulletImg)
+            if rowIndex == 0:
+                shootDirection = 0
+            elif rowIndex == 1:
+                shootDirection = 1
+            elif rowIndex == 2:
+                shootDirection = 2
+            elif rowIndex == 3:
+                shootDirection = 3
+            eggsCount(-1)
+            shootInProgress = True
     elif event.char == 't':
         trade()
     else:
@@ -238,6 +285,7 @@ peckSpriteCount = 0
 eggNumber = 0
 coinNumber = 5
 peckCount = 0
+peckInProgress = False
 
 window = Tk()
 window.title("Chicken Tour")
@@ -312,11 +360,15 @@ crop4Image = PhotoImage(file="./images/crop5.png")
 crop4 = ca.create_image(xCrop4, yCrop4, image=crop4Image)
 crop4State = 4
 
-window.after(4000, growCrops)
-
 marketImage = PhotoImage(file="./images/market.png")
 market = ca.create_image(xMarket, yMarket, image=marketImage)
 
+eggBulletImg = PhotoImage(file="./images/egg-bullet.png")
+
 keyE = PhotoImage(file="./images/e-key.png")
+
+shootInProgress = False
+shoot()
+window.after(4000, growCrops)
 
 window.mainloop()
