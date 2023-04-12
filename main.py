@@ -74,7 +74,7 @@ def shoot():
     xWindow = window.winfo_width()
     yWindow = window.winfo_height()
 
-    if "eggBullet" in globals() and shootInProgress == True:
+    if "eggBullet" in globals() and shootInProgress == True: # récupére les coordonnées du projectile si il existe
         xEggBullet, yEggBullet = ca.coords(eggBullet)
 
     if shootInProgress == True:
@@ -94,9 +94,10 @@ def shoot():
         if (xDummy-50< xEggBullet < xDummy+50 and yDummy-50< yEggBullet < yDummy+50):
             shootInProgress = False
             ca.delete(eggBullet)
+            coinsCount(1)
             shootDummy()
 
-        if xEggBullet < 0 or xEggBullet > xWindow or yEggBullet < 0 or yEggBullet > yWindow: # debug
+        if xEggBullet < 0 or xEggBullet > xWindow or yEggBullet < 0 or yEggBullet > yWindow: # debug / supprime le projectile si il sort de la zone de jeu
             print("eggBullet on border")
             if xEggBullet < 0:
                 shootInProgress = False
@@ -130,7 +131,7 @@ def trade():
         print("Trade Declined")
     
     if coinNumber >= 50:
-        messagebox.showerror(title="Succès Déverrouiller", message="Vous avez obetnue plus de 50 pièces !")
+        messagebox.showinfo(title="Succès Déverrouiller", message="Vous avez obetnue plus de 50 pièces !")
 
 # peckAnimation = anime le picorage des plantes
 def peckAnimation():
