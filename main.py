@@ -6,6 +6,7 @@
 # - récupérer des œufs en picorant les plantes (+ animation)
 # - vendre les œufs à un magasin pour obtenir des pièces (valeur d'un œufs aléatoirelent choisie)
 # - tirer un œuf dans les quatres directions (devant, gauche, derrière, droite)
+# - un mannequin qui peut être touché par les œufs
 # - achievements: 10 œuf récupérés / 50 pièces obetnues
 # ========[FEATURES]=========
 
@@ -35,15 +36,48 @@ def eggsCount(eggsValue):
     eggNumber = eggNumber + eggsValue
     eggCounterLabel.config(text=f"{eggNumber} œufs")
 
+# reviveDummy = relève le manequin une fois qu'il a été touché
+def reviveDummy():
+    print("REVIVE DUMMY")
+    global ca, window, player
+    global dummy, xDummy, yDummy, eggBullet, dummy1Img, shootDummyStatue
+
+    ca.delete(dummy)
+    dummy = ca.create_image(xDummy, yDummy, image=dummy1Img)
+    shootDummyStatue = True
+
+# shootDummy = anime le manequin lorsqu'il est touché
+def shootDummy():
+    print("SHOOT DUMMY")
+    global ca, window, player
+    global dummy, xDummy, yDummy, dummyCounter, shootDummyStatue, shootInProgress, eggBullet, dummy1Img, dummy2Img, dummy3Img
+
+    dummyCounter += 1
+
+    if shootDummyStatue == True: # permet de faire bouger une seule fois par œuf
+        if dummyCounter == 1:
+            shootDummyStatue = False
+            ca.delete(dummy)
+            dummy = ca.create_image(xDummy, yDummy, image=dummy2Img)
+            window.after(100, shootDummy)
+            shootDummyStatue = True
+        elif dummyCounter == 2:
+            shootDummyStatue = False
+            ca.delete(dummy)
+            dummy = ca.create_image(xDummy, yDummy, image=dummy3Img)
+            window.after(5000, reviveDummy)
+
 # shoot = tire un œuf dans la direction où regarde le joueur
 def shoot():
-    global ca, window, player, eggNumber, eggBullet, eggBulletImg, shootInProgress, shootDirection
+    global ca, window, player, eggNumber, eggBullet, eggBulletImg, shootInProgress, shootDirection, xEggBullet, yEggBullet
 
     xWindow = window.winfo_width()
     yWindow = window.winfo_height()
 
-    if shootInProgress == True:
+    if "eggBullet" in globals() and shootInProgress == True:
         xEggBullet, yEggBullet = ca.coords(eggBullet)
+
+    if shootInProgress == True:
 
         if shootDirection == 0:
             xEggBullet += 10
@@ -57,15 +91,25 @@ def shoot():
         ca.delete(eggBullet)
         eggBullet = ca.create_image(xEggBullet, yEggBullet, image=eggBulletImg)
 
-    if "xEggBullet" in globals() or "yEggBullet" in globals(): # vérifie si la variable existe
-        if xEggBullet < 0:
+        if (xDummy-50< xEggBullet < xDummy+50 and yDummy-50< yEggBullet < yDummy+50):
             shootInProgress = False
-        if xEggBullet > xWindow:
-            shootInProgress = False
-        if yEggBullet < 0:
-            shootInProgress = False
-        if yEggBullet > yWindow:
-            shootInProgress = False
+            ca.delete(eggBullet)
+            shootDummy()
+
+        if xEggBullet < 0 or xEggBullet > xWindow or yEggBullet < 0 or yEggBullet > yWindow: # debug
+            print("eggBullet on border")
+            if xEggBullet < 0:
+                shootInProgress = False
+                ca.delete(eggBullet)
+            if xEggBullet > xWindow:
+                ca.delete(eggBullet)
+                shootInProgress = False
+            if yEggBullet < 0:
+                ca.delete(eggBullet)
+                shootInProgress = False
+            if yEggBullet > yWindow:
+                ca.delete(eggBullet)
+                shootInProgress = False
 
     window.after(20, shoot)
 
@@ -77,7 +121,7 @@ def trade():
 
     xPlayer, yPlayer = ca.coords(player)
 
-    if (xMarket-50< xPlayer < xMarket+50) and (yMarket-50< yPlayer < yMarket+50 and eggNumber > 0):
+    if (xMarket-50< xPlayer < xMarket+50 and yMarket-50< yPlayer < yMarket+50 and eggNumber > 0):
         eggsCount(-1)
         coinToEarn = randint(3, 7)
         coinsCount(coinToEarn)
@@ -105,7 +149,7 @@ def peckAnimation():
 def peck():
     print("PECK")
     global ca, window, player, peckSpriteCount, peckCount, peckInProgress
-    global crop1, crop2, crop3, crop4, crop1Image, crop2Image, crop3Image, crop4Image
+    global crop1, crop2, crop3, crop4
     global xCrop1, yCrop1, xCrop2, yCrop2, xCrop3, yCrop3, xCrop4, yCrop4, crop1State, crop2State, crop3State, crop4State
 
     xPlayer, yPlayer = ca.coords(player)
@@ -154,7 +198,7 @@ def peck():
 # growCrops = fait grandir les plantations
 def growCrops():
     global ca, window
-    global crop1, crop2, crop3, crop4, crop1Image, crop2Image, crop3Image, crop4Image
+    global crop1, crop2, crop3, crop4
     global xCrop1, yCrop1, xCrop2, yCrop2, xCrop3, yCrop3, xCrop4, yCrop4
     global crop1State, crop2State, crop3State, crop4State
 
@@ -282,6 +326,8 @@ eggNumber = 0
 coinNumber = 5
 peckCount = 0
 peckInProgress = False
+dummyCounter = 0
+shootDummyStatue = True
 
 window = Tk()
 window.title("Chicken Tour")
@@ -338,6 +384,7 @@ xCrop3, yCrop3 = 220, 540
 xCrop4, yCrop4 = 660, 490
 
 xMarket, yMarket = 460, 185
+xDummy, yDummy = 420, 530
 
 # ============[props]============ #
 crop1 = ca.create_image(xCrop1, yCrop1, image=principalCropsList[0][0])
@@ -354,6 +401,11 @@ crop4State = 4
 
 marketImage = PhotoImage(file="./images/market.png")
 market = ca.create_image(xMarket, yMarket, image=marketImage)
+
+dummy1Img = PhotoImage(file="./images/dummy-1.png")
+dummy2Img = PhotoImage(file="./images/dummy-2.png")
+dummy3Img = PhotoImage(file="./images/dummy-3.png")
+dummy = ca.create_image(xDummy, yDummy, image=dummy1Img)
 
 eggBulletImg = PhotoImage(file="./images/egg-bullet.png")
 

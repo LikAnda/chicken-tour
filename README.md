@@ -17,6 +17,7 @@ FR version only
 - collect eggs by pecking plants (+ animation)
 - sell the eggs to a shop to get coins (value of a randomly chosen egg)
 - shoot an egg in the four directions (front, left, back, right)
+- throw an egg on a dummy
 - achievements: 10 eggs collected / 50 coins obtained
 
 ----
